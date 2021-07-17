@@ -1,0 +1,115 @@
+---
+title: "association rules"
+author: "EZRA MAGETO"
+date: "7/17/2021"
+output: html_document
+---
+
+# ASSOCIATION RULES 
+
+#### This section will require that you create association rules that will allow you to identify relationships between variables in the dataset. You are provided with a separate dataset that comprises groups of items that will be associated with others. Just like in the other sections, you will also be required to provide insights for your analysis.
+
+# LOADING THE DATASET
+
+```{r}
+#loading the arules library
+library(arules)
+```
+
+```{r}
+#previewing the dataset
+super<-read.transactions("http://bit.ly/SupermarketDatasetII",sep ="," )
+head(super)
+```
+
+six transactions and 119 items present
+
+```{r}
+# Verifying the object's class
+class(super)
+
+```
+
+```{r}
+#previewing the first four transactions
+inspect(super[1:4])
+```
+
+```{r}
+#previewing the items that make the dataset
+items<-as.data.frame(itemLabels(super))
+colnames(items) <- "Item"
+head(items,10)
+```
+
+```{r}
+#summary of the transactions
+summary(super)
+```
+
+```{r}
+#Exploring the frequency of some articles 
+# i.e. transacations ranging from 8 to 10 and performing 
+# some operation in percentage terms of the total transactions 
+# 
+itemFrequency(super[, 8:10],type = "absolute")
+round(itemFrequency(super[, 8:10],type = "relative")*100,2)
+```
+
+```{r}
+#plotting the top 10 items
+par(mfrow = c(1, 2))
+
+# plot the frequency of items
+itemFrequencyPlot(super, topN = 10,col="darkgreen")
+itemFrequencyPlot(super, support = 0.1,col="darkred")
+```
+
+```{r}
+# Building a model based on association rules of min support o.001 and confidence o.8
+
+rules <- apriori(super, parameter = list(supp = 0.001, conf = 0.8))
+rules
+```
+
+set of 74 rules are created with this parameter
+
+```{r}
+# Building a model based on association rules of min support o.002 and confidence 0.8
+
+rules <- apriori(super, parameter = list(supp = 0.002, conf = 0.8))
+rules
+```
+
+a set of two rules is created with this parameter
+
+```{r}
+# Building a model based on association rules of min support 0.001 and confidence 0.6
+
+rules <- apriori(super, parameter = list(supp = 0.001, conf = 0.6))
+rules
+```
+
+reducing the confidence increases the set of rules while increasing the min support reduces the set of rules
+
+```{r}
+#summary of the rules
+summary(rules)
+```
+
+```{r}
+# Observing rules built in our model i.e. first 5 model rules
+# ---
+# 
+inspect(rules[1:5])
+```
+
+if one buys low fat yogurt and shallot they are 70% likely to buy cookies
+
+```{r}
+# sorting the rules in decreasing order of confidence
+rules <- sort(rules, by = "confidence", decreasing = TRUE)
+inspect(rules[1:5])
+```
+
+four rules have a confidence level of 100 while the remaining one has a confidence level of 95

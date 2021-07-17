@@ -1,0 +1,257 @@
+---
+title: "ip-week-14-core"
+author: "EZRA MAGETO"
+date: "7/17/2021"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# DEFINITION OF THE PROBLEM 
+
+#### You are a Data analyst at Carrefour Kenya and are currently undertaking a project that will inform the marketing department on the most relevant marketing strategies that will result in the highest no. of sales (total price including tax) 
+
+# METRICS OF SUCCESS 
+
+#### Your project has been divided into four parts where you'll explore a recent marketing dataset by performing various unsupervised learning techniques and later providing recommendations based on your insights. 
+
+# EXPERIMENTAL DESIGN 
+
+#### 1.Perform dimensionality reduction using PCA
+
+####  2.Perform feature selection using different methods
+
+# LOADING THE DATASET
+
+```{r}
+carre<-read.csv("http://bit.ly/CarreFourDataset")
+```
+
+```{r}
+#previewing the head of the dataset
+head(carre)
+```
+
+```{r}
+#previewing the tail of the dataset
+tail(carre)
+```
+
+```{r}
+#viewing the datatable
+View(carre)
+```
+
+# EXPLORING THE DATASET
+
+```{r}
+#checking the shape of the dataset
+dim(carre)
+```
+
+```{r}
+#checking for the column names
+colnames(carre)
+```
+
+```{r}
+#checking internal structure of the dataset
+str(carre)
+```
+
+# CLEANING THE DATASET
+
+```{r}
+#checking for the sum of missing values
+colSums(is.na(carre))
+```
+
+there are no missing values in each column
+
+```{r}
+#checking for duplicates
+anyDuplicated(carre)
+```
+
+there are no duplicates in the dataset
+
+```{r}
+#dropping the Invoice.ID,date and time
+carre$Invoice.ID<-NULL
+carre$Date<-NULL
+carre$Time<-NULL
+carre$gross.margin.percentage<-NULL
+dim(carre)
+```
+
+the Invoice.ID,date,time and gross margin percentage column is not
+necessary in the analysis
+
+```{r}
+#changing categorical columns to numeric
+
+carre$Branch <- as.numeric(carre$Branch)
+carre$Customer.type<-as.numeric(carre$Customer.type) 
+carre$Gender <- as.numeric(carre$Gender)
+carre$Product.line <- as.numeric(carre$Product.line)
+carre$Payment <- as.numeric(carre$Payment)
+```
+
+```{r}
+colnames(carre)
+```
+
+# DIMENSIONALITY REDUCTION 
+
+## 1.0 PCA
+
+```{r}
+df <- carre[,c(5,6,7,9,10,11,12)]
+head(df)
+```
+
+```{r}
+carre.pca <- prcomp(carre[,c(5,6,7,9,10,11,12)], center = TRUE, scale. = TRUE)
+summary(carre.pca)
+```
+
+PC1 forms 70% of the total variance while PC2 forms 14% of the total
+variance.This carries most of the information in the dataset
+
+```{r}
+#Calling str() to have a look at your PCA object
+str(carre.pca)
+```
+
+```{r}
+# loading libraries to plot our PCA
+Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")
+
+
+
+library(devtools)
+library(usethis)
+
+
+install_github("vqv/ggbiplot",force = TRUE)
+
+2
+```
+
+```{r}
+#visualizing the pca
+library(ggbiplot)
+ggbiplot(carre.pca)
+```
+
+```{r}
+# adding more detail to the plot
+ggbiplot(carre.pca, labels = rownames(carre), obs.scale = 1, var.scale = 1)
+```
+
+# 2.0 FEATURE SELECTION 
+
+This section requires you to perform feature selection through the use
+of the unsupervised learning methods learned earlier this week. You will
+be required to perform your analysis and provide insights on the
+features that contribute the most information to the dataset.
+
+# 2.1 FILTER METHOD
+
+```{r}
+#getting the necessary libraries
+library(caret)
+library(corrplot)
+library(lattice)
+```
+
+```{r}
+# Calculating the correlation matrix
+# ---
+#
+correlationMatrix <- cor(carre)
+correlationMatrix
+```
+
+```{r}
+# Find attributes that are highly correlated
+# ---
+#
+highlyCorrelated <- findCorrelation(correlationMatrix, cutoff=0.75)
+
+# Highly correlated attributes
+# ---
+# 
+highlyCorrelated
+
+names(carre[,highlyCorrelated])
+```
+
+```{r}
+# Removing Redundant Features 
+# ---
+# 
+carre2<-carre[-highlyCorrelated]
+```
+
+```{r}
+
+#corrplot(cor(carre2), order = "hclust")
+```
+
+# 2.2 WRAPPER METHOD
+
+```{r}
+#required libraries
+library(mclust)
+library(clustvarsel)
+```
+
+```{r}
+#carrying greedy search
+
+greed = clustvarsel(carre, G = 1:8)
+greed
+```
+
+```{r}
+
+#building the clustering model
+Subset1 = carre[, greed$subset]
+mod = Mclust(Subset1, G = 1:8)
+summary(mod)
+```
+
+```{r}
+#visualising
+plot(mod ,c("classification"))
+```
+
+# 2.3 EMBEDDED METHOD
+
+```{r}
+#required libraries
+library(wskm)
+library(cluster)
+```
+
+```{r}
+# Cluster Plot against 1st 2 principal components
+# ---
+#
+clusplot(carre[1:7], model$cluster, color=TRUE, shade=TRUE,
+         labels=2, lines=1,main='Cluster Analysis for carre')
+```
+
+```{r}
+#getting the weights
+round(model$weights*100,2)
+```
+
+# RECOMMENDATION
+
+LOADING...
+
+couldn't come up with conclusion because of the chunks taking too long
+to load

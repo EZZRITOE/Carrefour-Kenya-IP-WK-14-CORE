@@ -1,0 +1,70 @@
+---
+title: "Anomaly Detection"
+author: "EZRA MAGETO"
+date: "7/17/2021"
+output: html_document
+---
+
+# ANOMALY DETECTION 
+
+#### You have also been requested to check whether there are any anomalies in the given sales dataset. The objective of this task being fraud detection.
+
+```{r}
+mrkt<-read.csv("http://bit.ly/CarreFourSalesDataset")
+head(mrkt)
+```
+
+```{r}
+#shape of the dataset
+dim(mrkt)
+```
+
+```{r}
+#finding total sales in dates
+sales_total <- aggregate(mrkt$Sales, by = list(Date = mrkt$Date), FUN = sum)
+
+head(sales_total)
+```
+
+```{r}
+#data frame on frequency in dates
+freq_tab <- data.frame(table(mrkt$Date))
+head(freq_tab)
+```
+
+```{r}
+#merging both data frames
+df <- merge(sales_total, freq_tab, by.x = "Date", by.y = "Var1")
+names(df)<-c("Date","Total.Sales","Freq")
+head(df)
+```
+
+```{r}
+#loading the necessary libraries
+library(lubridate)
+library(tibbletime)
+library(tidyverse)
+library(anomalize)
+```
+
+```{r}
+#changing date column to date format
+df$Date <- mdy(df$Date)
+str(df)
+```
+
+```{r}
+#using tibble time function to set frequency and trend parameters 
+df$Date <- as_tbl_time(df, index = 'Date')
+str(df$Date)
+```
+
+```{r}
+#Anomaly detection
+freq_tab %>%
+    as_tibble() %>%
+    time_decompose(count, method = "stl") %>%
+    anomalize(remainder) %>%
+    time_recompose() %>%
+    plot_anomalies(time_recomposed = TRUE, ncol = 3, alpha_dots = 0.5)
+```
