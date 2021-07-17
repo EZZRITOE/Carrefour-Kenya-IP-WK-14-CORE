@@ -1,0 +1,2 @@
+# Carrefour-Kenya-IP-WK-14-CORE
+MARKETING STRATEGIES
